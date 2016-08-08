@@ -2,25 +2,25 @@ const MediumEditor = require('medium-editor');
 
 module.exports = MediumEditor.extensions.button.extend({
 
-  // default values, can be overwritten on init
-  name: 'phrase', // name used to reference the button from medium editor
+  // default values can be overwritten by options on init
+  phraseTagName: 'span', // lowercase tagName of the phrase tag
+  phraseClassList: [], // classes applied to each phrase tag
+  name: 'phrase', // name used to reference the button from Medium Editor
   contentDefault: 'S', // html visible to the user in the toolbar button
   aria: 'Span Button', // aria label
-  classList: ['medium-editor-action-phrase'], // classes added to the button
-  phraseClassList: [], // classes applied to each phrase tag
-  phraseTagName: 'span', // lowercase tagName of the phrase tag
+  classList: [], // classes added to the button
 
   init: function () {
     MediumEditor.Extension.prototype.init.apply(this, arguments);
 
+    // properties not set in options
     this.useQueryState = false; // cannot rely on document.queryCommandState()
     this.placeholderHtml = '<div data-phrase-placeholder="true"></div>';
     this.placeholderSelector = 'div[data-phrase-placeholder="true"]';
     this.phraseHasNoClass = this.phraseClassList.length === 0;
     this.phraseSelector = this.phraseTagName + this.phraseClassList.reduce((selector, className) => selector + '.' + className, '');
-    this.openingTag = `<${ this.phraseTagName } class="${ this.phraseClassList.join(' ').trim() }">`;
+    this.openingTag = `<${ this.phraseTagName }${ this.phraseHasNoClass ? '' : ' class="' + this.phraseClassList.join(' ').trim() + '"' }>`;
     this.closingTag = `</${ this.phraseTagName }>`;
-
     this.button = this.createButton();
     this.on(this.button, 'click', this.handleClick.bind(this));
   },
@@ -43,8 +43,11 @@ module.exports = MediumEditor.extensions.button.extend({
    * @returns {boolean}
    */
   isPhraseNode: function (node) {
-    return !!(node && node.tagName.toLowerCase() === this.phraseTagName &&
-      this.phraseHasNoClass ? !node.className : this.phraseClassList.reduce((hasAll, c) => hasAll && node.classList.contains(c), true));
+    return !!(
+      node &&
+      node.tagName.toLowerCase() === this.phraseTagName &&
+      (this.phraseHasNoClass ? !node.className : this.phraseClassList.reduce((hasAll, c) => hasAll && node.classList.contains(c), true))
+    );
   },
 
   /**
@@ -226,7 +229,6 @@ module.exports = MediumEditor.extensions.button.extend({
     e.preventDefault();
     e.stopPropagation();
     this.replaceSelectionHtml(!ancestorPhrase || this.hasSelectionPhrase() ? this.togglePhraseTags() : this.removeAncestorPhrase(ancestorPhrase));
-
     this.isAlreadyApplied() ? this.setActive() : this.setInactive(); // update button state
     this.base.checkContentChanged(); // triggers 'editableInput' event
   },

@@ -4,8 +4,7 @@ Medium Editor Phrase is an extension to add a "phrase" button to [Medium Editor]
 
 A "phrase" is a group of one or more words.
 
-This extension can be used to add a button to Medium Editor that adds an HTML tag to the selected text. Generally this means adding a `span` tag around a phrase that may not have any semantic meaning. The `span` can be useful for adding styles to the selected phrase. The phraseTagName is an option, so tags other than `span` can be used, e.g. `div`, `pre`, or any other tag.
-
+This extension can be used to add a button to Medium Editor that adds an HTML tag to the selected text. Generally this means adding a `span` tag around a phrase that may not have any semantic meaning. The `span` can be useful for adding styles to the selected phrase. The phraseTagName is an option, so any [HTML phasing content tag](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content) can be used, e.g. `span`, `em`, or `code`.
 
 ## Installation
 
@@ -28,7 +27,7 @@ Options inherited from Medium Editor's button:
 * `name`: name used to reference the button from medium editor, default `'phrase'`
 * `aria`: aria label, default `'phrase'`
 * `contentDefault`: HTML visible to the user in the toolbar button, default `'S'`
-* `classList`: classes added to the button, default `['medium-editor-action-phrase']`
+* `classList`: classes added to the button, default `[]`
 
 
 ## Example
