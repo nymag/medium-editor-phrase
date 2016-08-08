@@ -1,0 +1,14 @@
+# Logs
+logs
+*.log
+.idea
+.DS_Store
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Dependency directory
+node_modules
+
+# Scripts compiled on postinstall by gulp
+dist
