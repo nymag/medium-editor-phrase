@@ -10,5 +10,5 @@ coverage
 # Dependency directory
 node_modules
 
-# Scripts compiled on postinstall by gulp
+# Scripts compiled by gulp on prepublish and included in package.json `files`.
 dist
