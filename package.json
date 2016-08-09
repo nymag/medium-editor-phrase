@@ -9,9 +9,9 @@
   "scripts": {
     "lint": "eslint src",
     "karma": "karma start",
-    "karma-local": "karma start karma.local.conf.js",
+    "karma-browserstack": "karma start karma.browserstack.conf.js",
     "test": "npm run lint && npm run karma",
-    "test-local": "npm run lint && npm run karma-local",
+    "test-browserstack": "npm run lint && npm run karma-browserstack",
     "prepublish": "gulp"
   },
   "repository": {

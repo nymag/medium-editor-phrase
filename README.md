@@ -59,8 +59,8 @@ e.g. `preceding selected succeeding` will become `preceding <span class="has-foo
 
 ## Terminal commands
 * `npm install medium-editor-phrase` downloads Medium Editor Phrase.
-* `npm test` runs eslint locally and karma tests on BrowserStack configured by `karma.conf.js`. Note: `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` environment variables must be set to run tests on BrowserStack.
-* `npm run test-local` runs both eslint and karma tests locally configured by `karma.local.conf.js`.
+* `npm test` runs both eslint and karma tests configured by `karma.conf.js`.
+* `npm run test-browserstack` runs eslint locally and karma tests on BrowserStack configured by `karma.browserstack.conf.js`. Note: `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` environment variables must be set to run tests on BrowserStack.
 * `gulp` compiles the script to `dist/medium-editor-phrase.js` and `dist/medium-editor-phrase.min.js`.
 
 
