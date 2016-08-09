@@ -7,7 +7,6 @@ var settings = {
   singleRun: true,
   browserify: {
     transform: [
-      'rollupify', // must precede babelify
       babelify.configure({
         presets: ['es2015']
       }),
@@ -32,7 +31,7 @@ var settings = {
   },
   reporters: ['dots', 'coverage'],
   files: ['src/*.js'],
-  frameworks: ['mocha', 'chai', 'sinon', 'browserify'],
+  frameworks: ['mocha', 'chai', 'browserify'],
   preprocessors: {
     'src/*.js': ['browserify']
   },
@@ -45,8 +44,7 @@ var settings = {
     'karma-chrome-launcher',
     'karma-firefox-launcher',
     'karma-mocha',
-    'karma-safari-launcher',
-    'karma-sinon',
+    'karma-safari-launcher'
   ]
 };
 
