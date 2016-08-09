@@ -10,8 +10,10 @@
     "lint": "eslint src",
     "karma": "karma start",
     "karma-browserstack": "karma start karma.browserstack.conf.js",
+    "karma-travis": "karma start karma.travis.conf.js",
     "test": "npm run lint && npm run karma",
     "test-browserstack": "npm run lint && npm run karma-browserstack",
+    "test-travis": "npm run lint && npm run karma-travis",
     "prepublish": "gulp"
   },
   "repository": {
