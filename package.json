@@ -9,10 +9,23 @@
   "scripts": {
     "lint": "eslint src",
     "karma": "karma start",
-    "karma-local": "karma start karma.local.conf.js",
+    "karma-browserstack": "karma start karma.browserstack.conf.js",
+    "karma-travis": "karma start karma.travis.conf.js",
     "test": "npm run lint && npm run karma",
-    "test-local": "npm run lint && npm run karma-local",
+    "test-browserstack": "npm run lint && npm run karma-browserstack",
+    "test-travis": "npm run lint && npm run karma-travis",
     "prepublish": "gulp"
+  },
+  "config": {
+    "blanket": {
+      "pattern": [
+        "src"
+      ],
+      "data-cover-never": [
+        "node_modules",
+        "dist"
+      ]
+    }
   },
   "repository": {
     "type": "git",
@@ -35,6 +48,7 @@
   "devDependencies": {
     "babel-preset-es2015-script": "^1.0.0",
     "babelify": "^7.3.0",
+    "blanket": "^1.2.3",
     "browserify": "^13.0.0",
     "browserify-istanbul": "^0.2.1",
     "chai": "^3.4.1",
@@ -51,6 +65,7 @@
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^0.2.2",
     "karma-coverage": "^0.5.0",
+    "karma-coveralls": "^1.1.2",
     "karma-firefox-launcher": "^0.1.6",
     "karma-mocha": "^0.2.1",
     "karma-safari-launcher": "^0.1.1",
