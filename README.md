@@ -1,5 +1,8 @@
 # Medium Editor Phrase
 
+[![Build Status](https://travis-ci.org/nymag/medium-editor-phrase.svg)](https://travis-ci.org/nymag/medium-editor-phrase)
+[![Coverage Status](https://coveralls.io/repos/nymag/medium-editor-phrase/badge.svg?branch=master)](https://coveralls.io/r/nymag/medium-editor-phrase?branch=master)
+
 Medium Editor Phrase is an extension to add a "phrase" button to [Medium Editor](https://github.com/yabwe/medium-editor).
 
 A "phrase" is a group of one or more words.

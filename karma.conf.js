@@ -30,7 +30,7 @@ var settings = {
       lines: [50, 75]
     }
   },
-  reporters: ['dots', 'coverage'],
+  reporters: ['spec', 'dots', 'coverage'],
   files: ['src/*.js'],
   frameworks: ['mocha', 'chai', 'browserify'],
   preprocessors: {
@@ -38,6 +38,7 @@ var settings = {
   },
   plugins: [
     'karma-coverage',
+    'karma-coveralls',
     'karma-spec-reporter',
     'karma-browserify',
     'karma-browserstack-launcher',
@@ -51,7 +52,6 @@ var settings = {
 
 module.exports = function (karma) {
   karma.set(Object.assign(settings, {
-    reporters: ['spec'],
     browsers: ['Chrome']
   }));
 };
