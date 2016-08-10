@@ -9,6 +9,8 @@ A "phrase" is a group of one or more words.
 
 This extension can be used to add a button to Medium Editor that adds an HTML tag to the selected text. Generally this means adding a `span` tag around a phrase that may not have any semantic meaning. The `span` can be useful for adding styles to the selected phrase. The phraseTagName is an option, so any [HTML phasing content tag](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content) can be used, e.g. `span`, `em`, or `code`.
 
+In some cases, an alternative to this extension could be [MediumButton]https://github.com/arcs-/MediumButton. Medium Editor Phrase has improved handling of selecting/unselecting text and unit tests pass on Chrome, Firefox, Safari, Safari Mobile, and Edge.
+
 ## Installation
 
 ```
@@ -63,6 +65,7 @@ e.g. `preceding selected succeeding` will become `preceding <span class="has-foo
 ## Terminal commands
 * `npm install medium-editor-phrase` downloads Medium Editor Phrase.
 * `npm test` runs both eslint and karma tests configured by `karma.conf.js`.
+* `npm run test-travis` runs eslint and karma configured for Travis CI by `karma.travis.conf.js` to run tests on headless Chrome browser and report code coverage to Coveralls.
 * `npm run test-browserstack` runs eslint locally and karma tests on BrowserStack configured by `karma.browserstack.conf.js`. Note: `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` environment variables must be set to run tests on BrowserStack.
 * `gulp` compiles the script to `dist/medium-editor-phrase.js` and `dist/medium-editor-phrase.min.js`.
 
