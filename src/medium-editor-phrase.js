@@ -86,8 +86,12 @@
         return '';
       });
 
-      // add phrase tags
-      return closingTagsAtStart + this.openingTag + phrase + this.closingTag + openingTagsAtEnd;
+      // only add phrase tags if there is phrase text
+      if (phrase) {
+        phrase = this.openingTag + phrase + this.closingTag;
+      }
+
+      return closingTagsAtStart + phrase + openingTagsAtEnd;
     },
 
     /**
@@ -197,15 +201,15 @@
      * @returns {string} HTML
      */
     togglePhraseTags: function () {
-      var html,
-        container = this.cloneSelection(),
-        selectionPhrases = this.getSelectionPhrases(container);
+      var container = this.cloneSelection(),
+        selectionPhrases = this.getSelectionPhrases(container),
+        html = container.innerHTML;
 
       if (selectionPhrases.length) { // selection already has phrases, so remove them
         selectionPhrases.forEach(this.removePhraseTags); // remove phrases while keeping their innerHTML
         html = container.innerHTML;
-      } else { // no phrases found so add phrase tags
-        html = this.addPhraseTags(container.innerHTML);
+      } else if (container.textContent) { // no phrases found and has textContent, so add phrase tags
+        html = this.addPhraseTags(html);
       }
       return html;
     },

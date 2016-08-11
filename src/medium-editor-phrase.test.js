@@ -81,6 +81,20 @@ describe(dirname, function () {
         expect(el.innerHTML).to.equal('<span class="phrase-class">a </span><b>selected</b><span class="phrase-class"> unselected</span>');
       });
 
+      it('removes parent phrase tags from selection when there is no text node in unselected area', function () {
+        el.innerHTML = '<span class="phrase-class"><b>selected</b></span>';
+        selectText(el.querySelector('b'));
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('<b>selected</b>');
+      });
+
+      it('does not add phrase tags if the selection has no text node', function () {
+        el.innerHTML = '<b></b>';
+        selectText(el.querySelector('b'));
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('<b></b>');
+      });
+
     });
 
     describe('when phrase has no class', function () {
@@ -113,6 +127,20 @@ describe(dirname, function () {
         expect(el.innerHTML).to.equal('<span>a </span><b>selected</b><span> unselected</span>');
       });
 
+      it('removes parent phrase tags from selection when there is no text node in unselected area', function () {
+        el.innerHTML = '<span><b>selected</b></span>';
+        selectText(el.querySelector('b'));
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('<b>selected</b>');
+      });
+
+      it('does not add phrase tags if the selection has no text node', function () {
+        el.innerHTML = '<b></b>';
+        selectText(el.querySelector('b'));
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('<b></b>');
+      });
+
     });
 
     describe('when phrase is a different phrasing tag', function () {
@@ -143,6 +171,20 @@ describe(dirname, function () {
         selectText(el.querySelector('b'));
         clickPhraseButton();
         expect(el.innerHTML).to.equal('<em class="phrase-class">a </em><b>selected</b><em class="phrase-class"> unselected</em>');
+      });
+
+      it('removes parent phrase tags from selection when there is no text node in unselected area', function () {
+        el.innerHTML = '<em class="phrase-class"><b>selected</b></em>';
+        selectText(el.querySelector('b'));
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('<b>selected</b>');
+      });
+
+      it('does not add phrase tags if the selection has no text node', function () {
+        el.innerHTML = '<b></b>';
+        selectText(el.querySelector('b'));
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('<b></b>');
       });
 
     });
