@@ -26,12 +26,20 @@ function initEditorWithButton(el, phraseConfig) {
 /**
  * selects text
  * @param {Node} startNode
+ * @param {number} [startOffset]
+ * @param {Node} [endNode]
+ * @param {number} [endOffset]
  */
-function selectText(startNode) {
+function selectText(startNode, startOffset, endNode, endOffset) {
   var selection = window.getSelection(),
     range = document.createRange();
 
-  range.selectNodeContents(startNode);
+  if (!endNode) {
+    range.selectNodeContents(startNode);
+  } else {
+    range.setStart(startNode, startOffset || 0);
+    range.setEnd(endNode, endOffset || 0);
+  }
   selection.removeAllRanges();
   selection.addRange(range);
 }
@@ -92,7 +100,15 @@ describe(dirname, function () {
         el.innerHTML = '<b></b>';
         selectText(el.querySelector('b'));
         clickPhraseButton();
-        expect(el.innerHTML).to.equal('<b></b>');
+        expect(el.innerHTML).to.not.contain('<span class="phrase-class">'); // testing with `not.contain` because Edge adds a <br> when an empty element is selected
+      });
+
+      it('removes phrase tags if the selection ends at the end of the last text node in a phrase', function () {
+        // this is a case that can arise when a phrase is added and then text in front of the phrase through to the end of the phrase is selected.
+        el.innerHTML = 'a<span class="phrase-class"><b>b</b></span>';
+        selectText(el.firstChild, 0, el.querySelector('b').firstChild, 1);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>');
       });
 
     });
@@ -138,7 +154,14 @@ describe(dirname, function () {
         el.innerHTML = '<b></b>';
         selectText(el.querySelector('b'));
         clickPhraseButton();
-        expect(el.innerHTML).to.equal('<b></b>');
+        expect(el.innerHTML).to.not.contain('<span>');
+      });
+
+      it('removes phrase tags if the selection ends at the end of the last text node in a phrase', function () {
+        el.innerHTML = 'a<span><b>b</b></span>';
+        selectText(el.firstChild, 0, el.querySelector('b').firstChild, 1);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>');
       });
 
     });
@@ -184,7 +207,14 @@ describe(dirname, function () {
         el.innerHTML = '<b></b>';
         selectText(el.querySelector('b'));
         clickPhraseButton();
-        expect(el.innerHTML).to.equal('<b></b>');
+        expect(el.innerHTML).to.not.contain('<em class="phrase-class">');
+      });
+
+      it('removes phrase tags if the selection ends at the end of the last text node in a phrase', function () {
+        el.innerHTML = 'a<em class="phrase-class"><b>b</b></em>';
+        selectText(el.firstChild, 0, el.querySelector('b').firstChild, 1);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>');
       });
 
     });

@@ -1,6 +1,6 @@
 {
   "name": "medium-editor-phrase",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Phrase button for Medium Editor; useful for adding span tags to text.",
   "main": "dist/medium-editor-phrase.js",
   "files": [

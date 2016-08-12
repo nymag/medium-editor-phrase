@@ -7,8 +7,36 @@
     root.MediumEditorPhrase = factory;
   }
 }(this, (function (MediumEditor) {
-  return MediumEditor.extensions.button.extend({
+  const placeholderText = 'safariNeedsTextNode!@#$%^()*~',
+    placeholderHtml = '<div data-phrase-placeholder="true"></div>',
+    placeholderSelector = 'div[data-phrase-placeholder="true"]';
 
+  /**
+   *
+   * @param {string} html
+   * @returns {string}
+   */
+  function stripPlaceholderText(html) {
+    return html.replace(placeholderText, '');
+  }
+
+  /**
+   *
+   * @param {Node} child
+   * @returns {number} offset of the child relative to its parentNode
+   */
+  function getChildOffset(child) {
+    var offset = 1, // offset begins at 1
+      sibling = child.parentNode.firstChild;
+
+    while (sibling !== child) {
+      offset += 1;
+      sibling = sibling.nextSibling;
+    }
+    return offset;
+  }
+
+  return MediumEditor.extensions.button.extend({
     // default values can be overwritten by options on init
     phraseTagName: 'span', // lowercase tagName of the phrase tag
     phraseClassList: [], // classes applied to each phrase tag
@@ -22,8 +50,6 @@
 
       // properties not set in options
       this.useQueryState = false; // cannot rely on document.queryCommandState()
-      this.placeholderHtml = '<div data-phrase-placeholder="true"></div>';
-      this.placeholderSelector = 'div[data-phrase-placeholder="true"]';
       this.phraseHasNoClass = this.phraseClassList.length === 0;
       this.phraseSelector = this.phraseTagName + this.phraseClassList.reduce((selector, className) => selector + '.' + className, '');
       this.openingTag = `<${ this.phraseTagName }${ this.phraseHasNoClass ? '' : ' class="' + this.phraseClassList.join(' ').trim() + '"' }>`;
@@ -97,10 +123,10 @@
     /**
      *
      * @param {Node} container
-     * @returns {Array} Array of phrase elements that are in the selection
+     * @returns {Array} Array of phrase elements that are in the container
      */
     getSelectionPhrases: function (container) {
-      var selectionPhrases = Array.prototype.slice.call(container.querySelectorAll(this.phraseSelector + ',' + this.placeholderSelector));
+      var selectionPhrases = Array.prototype.slice.call(container.querySelectorAll(this.phraseSelector));
 
       if (this.phraseHasNoClass) {
         selectionPhrases = selectionPhrases.filter(phrase => !phrase.className); // ensure phrases have no className
@@ -161,6 +187,15 @@
     },
 
     /**
+     * this is necessary because safari will only select text nodes
+     * @param {Node} node - the placeholder will be inserted after this node
+     * @returns {Node}
+     */
+    insertTextNodePlaceholderAfter: function (node) {
+      return node.parentNode.insertBefore(this.document.createTextNode(placeholderText), node.nextSibling);
+    },
+
+    /**
      * html before and after the selection remain phrases,
      * a placeholder text node becomes the selected range,
      * and the selection html is returned.
@@ -172,7 +207,6 @@
         selectionHtml = this.getNodeHtml(this.cloneSelection()),
         selection = this.document.getSelection(),
         range = this.document.createRange(),
-        placeholderHtml = this.placeholderHtml,
         placeholderEl,
         textNodePlaceholder;
 
@@ -186,8 +220,8 @@
 
       // select a text node where the original selection needs to be re-inserted
       selection.removeAllRanges();
-      placeholderEl = ancestorPhraseParent.querySelector(this.placeholderSelector);
-      textNodePlaceholder = placeholderEl.parentNode.insertBefore(this.document.createTextNode('safariNeedsTextNode'), placeholderEl.nextSibling);
+      placeholderEl = ancestorPhraseParent.querySelector(placeholderSelector);
+      textNodePlaceholder = this.insertTextNodePlaceholderAfter(placeholderEl);
       placeholderEl.parentNode.removeChild(placeholderEl);
       range.selectNode(textNodePlaceholder); // selects text node because safari only allows selection of text nodes.
       selection.addRange(range);
@@ -197,13 +231,71 @@
     },
 
     /**
+     *
+     * @param {Node} node
+     * @param {Node} ancestorNode
+     * @returns {boolean}
+     */
+    isLastChildWithTextContent: function (node, ancestorNode) {
+      var n, nodeFound,
+        isLastChild = true,
+        walk = this.document.createTreeWalker(ancestorNode, NodeFilter.SHOW_TEXT, null, false);
+
+      while (n = walk.nextNode() && isLastChild) {
+        if (nodeFound) {
+          isLastChild = false;
+        }
+        if (n === node) {
+          nodeFound = true;
+        }
+      }
+      return isLastChild;
+    },
+
+    /**
+     * if the selection range starts outside of the phrase
+     * and ends on the last text node within the phrase,
+     * then we need to make sure that the range ends on
+     * the phrase so that the phrase tags are removed.
+     */
+    ensurePhraseSelected: function () {
+      var selection = this.window.getSelection(),
+        range = MediumEditor.selection.getSelectionRange(this.document),
+        endContainer = range.endContainer,
+        rangeStartsPriorToEndContainer = endContainer !== range.startContainer,
+        endContainerIsText = endContainer.nodeType === Node.TEXT_NODE,
+        endContainerIsFullySelected = range.endOffset === endContainer.textContent.length,
+        endContainerAncestorPhrase,
+        rangeContainingEndContainerAncestorPhrase,
+        textNodePlaceholder;
+
+      if (rangeStartsPriorToEndContainer && endContainerIsText && endContainerIsFullySelected) {
+        endContainerAncestorPhrase = MediumEditor.util.traverseUp(endContainer, this.isPhraseNode.bind(this));
+        if (
+          endContainerAncestorPhrase && // node is inside of a phrase
+          this.isLastChildWithTextContent(endContainer, endContainerAncestorPhrase) // is the last text node in the phrase
+        ) {
+          rangeContainingEndContainerAncestorPhrase = this.document.createRange();
+          rangeContainingEndContainerAncestorPhrase.setStart(range.startContainer, range.startOffset);
+          textNodePlaceholder = this.insertTextNodePlaceholderAfter(endContainerAncestorPhrase);
+          rangeContainingEndContainerAncestorPhrase.setEnd(textNodePlaceholder.parentNode, getChildOffset(textNodePlaceholder));
+          selection.removeAllRanges();
+          selection.addRange(rangeContainingEndContainerAncestorPhrase);
+        }
+      }
+    },
+
+    /**
      * get the HTML from the selected range and either add or remove the phrase tags.
      * @returns {string} HTML
      */
     togglePhraseTags: function () {
-      var container = this.cloneSelection(),
-        selectionPhrases = this.getSelectionPhrases(container),
-        html = container.innerHTML;
+      var container, selectionPhrases, html;
+
+      this.ensurePhraseSelected();
+      container = this.cloneSelection();
+      selectionPhrases = this.getSelectionPhrases(container);
+      html = container.innerHTML;
 
       if (selectionPhrases.length) { // selection already has phrases, so remove them
         selectionPhrases.forEach(this.removePhraseTags); // remove phrases while keeping their innerHTML
@@ -211,7 +303,7 @@
       } else if (container.textContent) { // no phrases found and has textContent, so add phrase tags
         html = this.addPhraseTags(html);
       }
-      return html;
+      return stripPlaceholderText(html); // placeholderText may have been added by this.ensurePhraseSelected()
     },
 
     /**
