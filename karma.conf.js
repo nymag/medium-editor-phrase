@@ -30,7 +30,7 @@ var settings = {
       lines: [50, 75]
     }
   },
-  reporters: ['spec', 'dots', 'coverage'],
+  reporters: ['spec', 'coverage'],
   files: ['src/*.js'],
   frameworks: ['mocha', 'chai', 'browserify'],
   preprocessors: {
