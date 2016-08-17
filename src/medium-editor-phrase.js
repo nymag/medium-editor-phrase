@@ -12,7 +12,6 @@
     placeholderSelector = 'div[data-phrase-placeholder="true"]';
 
   /**
-   *
    * @param {string} html
    * @returns {string}
    */
@@ -21,7 +20,6 @@
   }
 
   /**
-   *
    * @param {Node} child
    * @returns {number} offset of the child relative to its parentNode
    */
@@ -84,7 +82,6 @@
     },
 
     /**
-     *
      * @param {Element} phrase
      */
     removePhraseTags: function (phrase) {
@@ -92,7 +89,6 @@
     },
 
     /**
-     *
      * @param {string} phrase
      * @returns {string}
      */
@@ -121,7 +117,6 @@
     },
 
     /**
-     *
      * @param {Node} container
      * @returns {Array} Array of phrase elements that are in the container
      */
@@ -188,12 +183,28 @@
 
     /**
      * this is necessary because safari will only select text nodes
-     * @param {Node} node - the placeholder will be inserted after this node
+     * @param {Node} node - the placeholder will be inserted before or after this node
      * @param {boolean} after - if true, insert after
      * @returns {Node}
      */
     insertTextNodePlaceholder: function (node, after) {
       return node.parentNode.insertBefore(this.document.createTextNode(placeholderText), after ? node.nextSibling : node);
+    },
+
+    /**
+     * @param {Node} node - the placeholder will be inserted before this node
+     * @returns {Node}
+     */
+    insertTextNodePlaceholderBefore: function (node) {
+      return this.insertTextNodePlaceholder(node);
+    },
+
+    /**
+     * @param {Node} node - the placeholder will be inserted after this node
+     * @returns {Node}
+     */
+    insertTextNodePlaceholderAfter: function (node) {
+      return this.insertTextNodePlaceholder(node, true);
     },
 
     /**
@@ -222,7 +233,7 @@
       // select a text node where the original selection needs to be re-inserted
       selection.removeAllRanges();
       placeholderEl = ancestorPhraseParent.querySelector(placeholderSelector);
-      textNodePlaceholder = this.insertTextNodePlaceholder(placeholderEl, true);
+      textNodePlaceholder = this.insertTextNodePlaceholderAfter(placeholderEl);
       placeholderEl.parentNode.removeChild(placeholderEl);
       range.selectNode(textNodePlaceholder); // selects text node because safari only allows selection of text nodes.
       selection.addRange(range);
@@ -232,7 +243,6 @@
     },
 
     /**
-     *
      * @param {Node} node
      * @param {Node} ancestorNode
      * @returns {boolean}
@@ -253,6 +263,11 @@
       return isLastDescendant;
     },
 
+    /**
+     * @param {Node} node
+     * @param {Node} ancestorNode
+     * @returns {boolean}
+     */
     isFirstDescendantTextNode: function (node, ancestorNode) {
       var firstDescendantTextNode = this.document.createTreeWalker(ancestorNode, NodeFilter.SHOW_TEXT, null, false).firstChild();
 
@@ -284,7 +299,7 @@
         if (hasFullySelectedEndContainer) {
           containerAncestorPhrase = MediumEditor.util.traverseUp(endContainer, this.isPhraseNode.bind(this));
           if (containerAncestorPhrase && this.isLastDescendantTextNode(endContainer, containerAncestorPhrase)) {
-            textNodePlaceholder = this.insertTextNodePlaceholder(containerAncestorPhrase, true);
+            textNodePlaceholder = this.insertTextNodePlaceholderAfter(containerAncestorPhrase);
             rangeContainingAncestorPhrase.setStart(startContainer, startOffset);
             rangeContainingAncestorPhrase.setEnd(textNodePlaceholder.parentNode, getChildOffset(textNodePlaceholder));
           }
@@ -293,7 +308,7 @@
         if (hasFullySelectedStartContainer) {
           containerAncestorPhrase = MediumEditor.util.traverseUp(startContainer, this.isPhraseNode.bind(this));
           if (containerAncestorPhrase && this.isFirstDescendantTextNode(startContainer, containerAncestorPhrase)) {
-            rangeContainingAncestorPhrase.setStart(this.insertTextNodePlaceholder(containerAncestorPhrase), 0);
+            rangeContainingAncestorPhrase.setStart(this.insertTextNodePlaceholderBefore(containerAncestorPhrase), 0);
             if (!textNodePlaceholder) {
               rangeContainingAncestorPhrase.setEnd(endContainer, endOffset); // only setEnd if it was not already set
             }
