@@ -12,16 +12,14 @@
     placeholderSelector = 'div[data-phrase-placeholder="true"]';
 
   /**
-   *
    * @param {string} html
    * @returns {string}
    */
   function stripPlaceholderText(html) {
-    return html.replace(placeholderText, '');
+    return html.split(placeholderText).join('');
   }
 
   /**
-   *
    * @param {Node} child
    * @returns {number} offset of the child relative to its parentNode
    */
@@ -84,7 +82,6 @@
     },
 
     /**
-     *
      * @param {Element} phrase
      */
     removePhraseTags: function (phrase) {
@@ -92,7 +89,6 @@
     },
 
     /**
-     *
      * @param {string} phrase
      * @returns {string}
      */
@@ -121,7 +117,6 @@
     },
 
     /**
-     *
      * @param {Node} container
      * @returns {Array} Array of phrase elements that are in the container
      */
@@ -188,11 +183,28 @@
 
     /**
      * this is necessary because safari will only select text nodes
+     * @param {Node} node - the placeholder will be inserted before or after this node
+     * @param {boolean} after - if true, insert after
+     * @returns {Node}
+     */
+    insertTextNodePlaceholder: function (node, after) {
+      return node.parentNode.insertBefore(this.document.createTextNode(placeholderText), after ? node.nextSibling : node);
+    },
+
+    /**
+     * @param {Node} node - the placeholder will be inserted before this node
+     * @returns {Node}
+     */
+    insertTextNodePlaceholderBefore: function (node) {
+      return this.insertTextNodePlaceholder(node);
+    },
+
+    /**
      * @param {Node} node - the placeholder will be inserted after this node
      * @returns {Node}
      */
     insertTextNodePlaceholderAfter: function (node) {
-      return node.parentNode.insertBefore(this.document.createTextNode(placeholderText), node.nextSibling);
+      return this.insertTextNodePlaceholder(node, true);
     },
 
     /**
@@ -231,56 +243,81 @@
     },
 
     /**
-     *
      * @param {Node} node
      * @param {Node} ancestorNode
      * @returns {boolean}
      */
-    isLastChildWithTextContent: function (node, ancestorNode) {
+    isLastDescendantTextNode: function (node, ancestorNode) {
       var n, nodeFound,
-        isLastChild = true,
+        isLastDescendant = true,
         walk = this.document.createTreeWalker(ancestorNode, NodeFilter.SHOW_TEXT, null, false);
 
-      while (n = walk.nextNode() && isLastChild) {
+      while (n = walk.nextNode() && isLastDescendant) {
         if (nodeFound) {
-          isLastChild = false;
+          isLastDescendant = false;
         }
         if (n === node) {
           nodeFound = true;
         }
       }
-      return isLastChild;
+      return isLastDescendant;
     },
 
     /**
-     * if the selection range starts outside of the phrase
-     * and ends on the last text node within the phrase,
-     * then we need to make sure that the range ends on
-     * the phrase so that the phrase tags are removed.
+     * @param {Node} node
+     * @param {Node} ancestorNode
+     * @returns {boolean}
+     */
+    isFirstDescendantTextNode: function (node, ancestorNode) {
+      var firstDescendantTextNode = this.document.createTreeWalker(ancestorNode, NodeFilter.SHOW_TEXT, null, false).firstChild();
+
+      return node === firstDescendantTextNode;
+    },
+
+    /**
+     * if the range starts outside of the phrase and ends at the end of the phrase,
+     * or starts at the beginning of the phrase and ends outside of the phrase,
+     * then we need to make sure that the range contains the entire phrase
+     * so that the phrase tags are removed.
      */
     ensurePhraseSelected: function () {
       var selection = this.window.getSelection(),
         range = MediumEditor.selection.getSelectionRange(this.document),
+        startContainer = range.startContainer,
+        startOffset = range.startOffset,
         endContainer = range.endContainer,
-        rangeStartsPriorToEndContainer = endContainer !== range.startContainer,
-        endContainerIsText = endContainer.nodeType === Node.TEXT_NODE,
-        endContainerIsFullySelected = range.endOffset === endContainer.textContent.length,
-        endContainerAncestorPhrase,
-        rangeContainingEndContainerAncestorPhrase,
+        endOffset = range.endOffset,
+        hasMultipleContainersSelected = endContainer !== startContainer,
+        hasFullySelectedEndContainer = endContainer.nodeType === Node.TEXT_NODE && endOffset === endContainer.textContent.length,
+        hasFullySelectedStartContainer = startContainer.nodeType === Node.TEXT_NODE && startOffset === 0,
+        rangeContainingAncestorPhrase = this.document.createRange(),
+        containerAncestorPhrase,
         textNodePlaceholder;
 
-      if (rangeStartsPriorToEndContainer && endContainerIsText && endContainerIsFullySelected) {
-        endContainerAncestorPhrase = MediumEditor.util.traverseUp(endContainer, this.isPhraseNode.bind(this));
-        if (
-          endContainerAncestorPhrase && // node is inside of a phrase
-          this.isLastChildWithTextContent(endContainer, endContainerAncestorPhrase) // is the last text node in the phrase
-        ) {
-          rangeContainingEndContainerAncestorPhrase = this.document.createRange();
-          rangeContainingEndContainerAncestorPhrase.setStart(range.startContainer, range.startOffset);
-          textNodePlaceholder = this.insertTextNodePlaceholderAfter(endContainerAncestorPhrase);
-          rangeContainingEndContainerAncestorPhrase.setEnd(textNodePlaceholder.parentNode, getChildOffset(textNodePlaceholder));
+      if (hasMultipleContainersSelected) {
+
+        if (hasFullySelectedEndContainer) {
+          containerAncestorPhrase = MediumEditor.util.traverseUp(endContainer, this.isPhraseNode.bind(this));
+          if (containerAncestorPhrase && this.isLastDescendantTextNode(endContainer, containerAncestorPhrase)) {
+            textNodePlaceholder = this.insertTextNodePlaceholderAfter(containerAncestorPhrase);
+            rangeContainingAncestorPhrase.setStart(startContainer, startOffset);
+            rangeContainingAncestorPhrase.setEnd(textNodePlaceholder.parentNode, getChildOffset(textNodePlaceholder));
+          }
+        }
+
+        if (hasFullySelectedStartContainer) {
+          containerAncestorPhrase = MediumEditor.util.traverseUp(startContainer, this.isPhraseNode.bind(this));
+          if (containerAncestorPhrase && this.isFirstDescendantTextNode(startContainer, containerAncestorPhrase)) {
+            rangeContainingAncestorPhrase.setStart(this.insertTextNodePlaceholderBefore(containerAncestorPhrase), 0);
+            if (!textNodePlaceholder) {
+              rangeContainingAncestorPhrase.setEnd(endContainer, endOffset); // only setEnd if it was not already set
+            }
+          }
+        }
+
+        if (!rangeContainingAncestorPhrase.collapsed) { // there is a new range
           selection.removeAllRanges();
-          selection.addRange(rangeContainingEndContainerAncestorPhrase);
+          selection.addRange(rangeContainingAncestorPhrase);
         }
       }
     },

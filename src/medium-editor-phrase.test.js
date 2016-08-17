@@ -111,6 +111,20 @@ describe(dirname, function () {
         expect(el.innerHTML).to.equal('a<b>b</b>');
       });
 
+      it('removes phrase tags if the selection starts at the first text node in a phrase and ends after the phrase', function () {
+        el.innerHTML = 'a<span class="phrase-class"><b>b</b></span>c';
+        selectText(el.querySelector('b').firstChild, 0, el.lastChild, 0);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>c');
+      });
+
+      it('removes phrase tags if the selection starts at the first text node in a phrase and ends at the end of another phrase', function () {
+        el.innerHTML = 'a<span class="phrase-class"><b>b</b></span>c<span class="phrase-class"><i>d</i></span>';
+        selectText(el.querySelector('b').firstChild, 0, el.querySelector('i').firstChild, 1);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>c<i>d</i>');
+      });
+
     });
 
     describe('when phrase has no class', function () {
@@ -164,6 +178,20 @@ describe(dirname, function () {
         expect(el.innerHTML).to.equal('a<b>b</b>');
       });
 
+      it('removes phrase tags if the selection starts at the first text node in a phrase and ends after the phrase', function () {
+        el.innerHTML = 'a<span><b>b</b></span>c';
+        selectText(el.querySelector('b').firstChild, 0, el.lastChild, 0);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>c');
+      });
+
+      it('removes phrase tags if the selection starts at the first text node in a phrase and ends at the end of another phrase', function () {
+        el.innerHTML = 'a<span><b>b</b></span>c<span><i>d</i></span>';
+        selectText(el.querySelector('b').firstChild, 0, el.querySelector('i').firstChild, 1);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>c<i>d</i>');
+      });
+
     });
 
     describe('when phrase is a different phrasing tag', function () {
@@ -215,6 +243,20 @@ describe(dirname, function () {
         selectText(el.firstChild, 0, el.querySelector('b').firstChild, 1);
         clickPhraseButton();
         expect(el.innerHTML).to.equal('a<b>b</b>');
+      });
+
+      it('removes phrase tags if the selection starts at the first text node in a phrase and ends after the phrase', function () {
+        el.innerHTML = 'a<em class="phrase-class"><b>b</b></em>c';
+        selectText(el.querySelector('b').firstChild, 0, el.lastChild, 0);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>c');
+      });
+
+      it('removes phrase tags if the selection starts at the first text node in a phrase and ends at the end of another phrase', function () {
+        el.innerHTML = 'a<em class="phrase-class"><b>b</b></em>c<em class="phrase-class"><i>d</i></em>';
+        selectText(el.querySelector('b').firstChild, 0, el.querySelector('i').firstChild, 1);
+        clickPhraseButton();
+        expect(el.innerHTML).to.equal('a<b>b</b>c<i>d</i>');
       });
 
     });
