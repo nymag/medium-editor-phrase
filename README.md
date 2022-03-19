@@ -47,7 +47,7 @@ e.g. `preceding selected succeeding` will become `preceding <span class="has-foo
 <script type="text/javascript" charset="utf-8">
   var editor = new MediumEditor('.editable', {
     toolbar: {
-      buttons: ['bold', 'italic', 'phrase']
+      buttons: ['bold', 'italic', 'footnote']
     },
     extensions: {
       phrase: new MediumEditorPhrase({
